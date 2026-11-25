@@ -1,8 +1,11 @@
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
 from .models import User
+from django.contrib.auth.decorators import login_required
 
 
+# USER REGISTRATION
 def register(request):
 
     if request.method == 'POST':
@@ -50,3 +53,47 @@ def register(request):
         })
 
     return render(request, 'accounts/register.html')
+
+
+
+# USER LOGIN
+def user_login(request):
+
+    if request.method == 'POST':
+
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Verify user credentials
+        user = authenticate(
+            request,
+            username=username,
+            password=password
+        )
+
+        if user is not None:
+
+            # Create login session
+            login(request, user)
+
+            return redirect('dashboard')
+
+        else:
+            return render(request, 'accounts/login.html', {
+                'error': 'Invalid username or password.'
+            })
+
+    return render(request, 'accounts/login.html')
+
+
+# USER LOGOUT
+def user_logout(request):
+
+    logout(request)
+
+    return redirect('login')
+    # USER DASHBOARD
+@login_required
+def dashboard(request):
+
+    return render(request, 'accounts/dashboard.html')
